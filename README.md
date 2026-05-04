@@ -1,30 +1,29 @@
-# Курсова робота: Discord Music Bot з веб-панеллю та алгоритмічними модулями
-#  Discord Music Bot (Coursework Project)
+# 🎧 Discord Music Bot (Coursework Project)
 
-##  Опис
+## 📌 Опис
 
 Цей проєкт — це Discord-бот для відтворення музики у голосових каналах з підтримкою веб-панелі керування.
 
 Бот дозволяє відтворювати музику з YouTube (через yt-dlp), керувати чергою треків, змінювати гучність, а також переглядати поточний стан через веб-інтерфейс.
 
-Проєкт також містить реалізації алгоритмічних та архітектурних тем курсової роботи (generators, memoization, priority queue, async, event system, proxy, logging).
+У проєкті також реалізовані теми курсової роботи: генератори, memoization, priority queue, async функції, event system, proxy та logging decorator.
 
 ---
 
-##  Функціонал
+## 🚀 Функціонал
 
-*  Відтворення музики (/play)
-*  Пошук треків (/search)
-*  Пауза /  Продовження (/pause, /resume)
-*  Пропуск (/skip)
-*  Черга (/queue)
-*  Пріоритетна черга (/priorityplay)
-*  Регулювання гучності
-*  Веб-панель керування (Flask)
+* ▶️ Відтворення музики (/play)
+* 🔎 Пошук треків (/search)
+* ⏸ Пауза / ▶️ Продовження (/pause, /resume)
+* ⏭ Пропуск (/skip)
+* 📜 Черга (/queue)
+* ⭐ Пріоритетна черга (/priorityplay)
+* 🔊 Регулювання гучності
+* 🌐 Веб-панель керування
 
 ---
 
-##  Використані технології
+## 🛠 Використані технології
 
 * Python
 * discord.py
@@ -36,17 +35,15 @@
 
 ---
 
-##  Структура проєкту
+## 📂 Структура проєкту
 
 ```
 -OP/
-│
 ├── bot.py
-├── requirements.txt
-├── .env.example
 ├── README.md
+├── requirements.txt
 ├── .gitignore
-│
+├── .env.example
 ├── templates/
 └── static/
 ```
@@ -57,31 +54,60 @@
 
 ### 1. Клонування репозиторію
 
-```
+```bash
 git clone https://github.com/removvi/-OP.git
-cd ".\-OP"
+cd -OP
 ```
 
 ---
 
 ### 2. Встановлення залежностей
 
-```
+```bash
 pip install -r requirements.txt
 ```
 
 ---
 
-### 3. Встановлення FFmpeg
+## 🔑 Як отримати Discord Bot Token
 
-Скачати FFmpeg:
+1. Перейди на сайт:
+   https://discord.com/developers/applications
 
- https://www.gyan.dev/ffmpeg/builds/
+2. Натисни **New Application**
+
+3. Перейди у вкладку **Bot**
+
+4. Натисни **Add Bot**
+
+5. Скопіюй **Token**
+
+⚠️ ВАЖЛИВО:
+Ніколи не викладай токен у GitHub — він дає повний доступ до бота.
+
+---
+
+## 🔐 Налаштування .env
+
+Створи файл `.env` у корені проєкту:
+
+```
+TOKEN=YOUR_DISCORD_BOT_TOKEN
+```
+
+Файл `.env` не додається в Git (він у `.gitignore`).
+
+---
+
+## 🎬 Встановлення FFmpeg
+
+Скачай FFmpeg:
+https://www.gyan.dev/ffmpeg/builds/
 
 Після цього:
 
-* або додати його в PATH
-* або вказати шлях у коді:
+* або додай його в PATH
+* або вкажи шлях у коді:
 
 ```python
 FFMPEG_PATH = r"C:\path\to\ffmpeg.exe"
@@ -89,55 +115,24 @@ FFMPEG_PATH = r"C:\path\to\ffmpeg.exe"
 
 ---
 
-##  Як отримати Discord Bot Token
+## ▶️ Запуск
 
-1. Перейти на сайт:
-    https://discord.com/developers/applications
-
-2. Натиснути **"New Application"**
-
-3. Перейти у вкладку **Bot**
-
-4. Натиснути **"Add Bot"**
-
-5. В налаштуваннях бота ввімкніть Message Content Intent та дайте
-такі дозволи для бота:
-```
--Надсилати повідомлення
--Вкладати посилання
--Читати історію повідомлень
--Під'єднувати
--Говорити
-
-```
-6. Скопіюйте **Token**
-
-##  Налаштування .env
-
-Створити файл `.env` у корені проєкту:
-
-```
-TOKEN=YOUR_DISCORD_BOT_TOKEN
-```
-
----
-
-## Запуск
-
-```
+```bash
 python bot.py
 ```
 
 Після запуску:
 
-* бот зʼявиться у Discord
-* веб-панель буде доступна на:
+* бот підключиться до Discord
+* веб-панель буде доступна за адресою:
 
- http://127.0.0.1:5000
+```
+http://127.0.0.1:5000
+```
 
 ---
 
-##  Команди
+## 🤖 Команди бота
 
 | Команда | Опис            |
 | ------- | --------------- |
@@ -153,21 +148,49 @@ python bot.py
 
 ---
 
-##  Реалізовані теми курсової
+## 🧠 Реалізовані теми курсової
 
 * Task 1 — Generators & Iterators
-* Task 3 — Memoization (LRU cache)
+* Task 3 — Memoization
 * Task 4 — Priority Queue
 * Task 5 — Async operations
-* Task 6 — Stream processing (FFmpeg)
+* Task 6 — Stream processing
 * Task 7 — EventEmitter
 * Task 8 — Auth Proxy
 * Task 9 — Logging decorator
 
+---
 
-##  Висновок
+## ⚠️ Можливі проблеми
 
-У проєкті реалізовано повноцінного Discord Music Bot з веб-панеллю та інтеграцією алгоритмічних структур і асинхронного програмування.
+### ❌ Бот не заходить у голосовий канал
 
-Проєкт демонструє практичне застосування Python, роботи з API, потоків даних та архітектурних патернів.
+Встанови:
 
+```bash
+pip install PyNaCl
+```
+
+---
+
+### ❌ Музика не грає
+
+Перевір:
+
+* чи встановлений FFmpeg
+* чи бот має права у Discord
+* чи ти знаходишся у голосовому каналі
+
+---
+
+### ❌ Token не працює
+
+Можливо Discord його скинув — створи новий у Developer Portal.
+
+---
+
+## 📄 Висновок
+
+У проєкті реалізовано Discord Music Bot з веб-панеллю та інтеграцією алгоритмічних структур і асинхронного програмування.
+
+Проєкт демонструє роботу з Discord API, потоками даних, обробкою аудіо та сучасними підходами до розробки на Python.
