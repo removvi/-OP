@@ -25,6 +25,6 @@ TestResults.xml
 .venv/
 __pycache__/
 *.pyc
-.env
+.env.example
 config.py
 ffmpeg.exe
