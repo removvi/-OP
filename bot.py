@@ -190,20 +190,12 @@ class BiDirectionalPriorityQueue:
 
 queue = BiDirectionalPriorityQueue()
 
-
-# ============================================================
 # TASK 5: Async Array Function Variant
-# Асинхронний map для обробки списку треків/результатів
-# ============================================================
-
 async def async_map(func, items):
     return await asyncio.gather(*(func(item) for item in items))
 
-
-# ============================================================
 # TASK 7: EventEmitter / Reactive Communication
 # Внутрішня система подій бота
-# ============================================================
 
 class EventEmitter:
     def __init__(self):
@@ -235,12 +227,9 @@ def on_track_added(data):
 events.subscribe("track_started", on_track_started)
 events.subscribe("track_added", on_track_added)
 
-
-# ============================================================
 # TASK 8: Authentication Proxy
 # Проксі для HTTP-запитів з авторизацією
 # Використовується для Spotify oEmbed
-# ============================================================
 
 class AuthProxy:
     def __init__(self, auth_type="none", token=None):
@@ -267,10 +256,7 @@ class AuthProxy:
 
 auth_proxy = AuthProxy()
 
-
-# ============================================================
-# Discord + Flask основа
-# ============================================================
+# Discord + Flask
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -588,9 +574,8 @@ async def play_next(guild):
             "status": "playing"
         }
 
-        # TASK 6: Stream Processing
-        # Тут бот не завантажує весь файл у пам'ять,
-        # а передає audio stream напряму через FFmpeg.
+ # TASK 6: Stream Processing
+
         audio_source = discord.FFmpegPCMAudio(
             info["audio_url"],
             executable=FFMPEG_PATH,
