@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>MusicBot Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body onload="updateData()">
+
+    <div class="container">
+        <h1>🎵 MusicBot Dashboard</h1>
+
+        <div class="card">
+            <h2>Зараз грає</h2>
+
+            <p class="track">Завантаження...</p>
+            <p id="time-info">0:00 / 0:00</p>
+
+            <div class="progress-wrapper">
+                <div id="progress-bar"></div>
+            </div>
+
+            <p id="track-status">Status: —</p>
+            <a id="track-link" href="#" target="_blank">Відкрити на YouTube</a>
+        </div>
+
+        <div class="card">
+            <h2>Додати трек</h2>
+
+            <form id="add-form">
+                <input 
+                    type="text" 
+                    name="query" 
+                    id="track-input"
+                    placeholder="Назва пісні, YouTube або Spotify-посилання"
+                    required
+                >
+                <button type="submit">Додати</button>
+            </form>
+
+            <p class="hint">Можна вставити назву пісні, YouTube-лінк або Spotify-лінк.</p>
+        </div>
+
+        <div class="card">
+            <h2>Керування</h2>
+
+            <div class="buttons">
+                <button onclick="sendAction('/skip')">⏭ Skip</button>
+                <button onclick="sendAction('/stop')">⏸ Pause</button>
+                <button onclick="sendAction('/resume')">▶ Resume</button>
+                <button onclick="sendAction('/leave')">👋 Leave</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Гучність</h2>
+
+            <input 
+                type="range" 
+                min="0" 
+                max="200" 
+                value="100"
+                id="volume-slider"
+            >
+            <span id="volume-value">100%</span>
+        </div>
+
+        <div class="card">
+            <h2>Черга</h2>
+
+            <ol id="queue-list">
+                <li>Завантаження...</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+    let currentElapsed = 0;
+    let currentDuration = 0;
+    let isPlaying = false;
+
+    function formatTime(seconds) {
+        seconds = Math.floor(seconds);
+        const min = Math.floor(seconds / 60);
+        const sec = seconds % 60;
+        return `${min}:${sec.toString().padStart(2, "0")}`;
+    }
+
+    function updateProgressSmooth() {
+        const progressBar = document.getElementById("progress-bar");
+        const timeInfo = document.getElementById("time-info");
+
+        if (!currentDuration || currentDuration <= 0) {
+            progressBar.style.width = "0%";
+            timeInfo.innerText = "0:00 / 0:00";
+            return;
+        }
+
+        const safeElapsed = Math.min(currentElapsed, currentDuration);
+        const progress = Math.min((safeElapsed / currentDuration) * 100, 100);
+
+        progressBar.style.width = progress + "%";
+        timeInfo.innerText = `${formatTime(safeElapsed)} / ${formatTime(currentDuration)}`;
+    }
+
+    async function updateData() {
+        try {
+            const res = await fetch('/status');
+            const data = await res.json();
+
+            const currentBlock = document.querySelector(".track");
+            const link = document.getElementById("track-link");
+            const trackStatus = document.getElementById("track-status");
+            const progressBar = document.getElementById("progress-bar");
+
+            if (data.current) {
+                currentBlock.innerText = data.current.title;
+                link.href = data.current.url;
+                link.style.display = "inline";
+
+                currentElapsed = data.current.elapsed;
+                currentDuration = data.current.duration;
+                isPlaying = data.current.status === "playing";
+
+                updateProgressSmooth();
+
+                if (data.current.status === "paused") {
+                    trackStatus.innerText = "Status: ⏸ Paused";
+                } else {
+                    trackStatus.innerText = "Status: ▶ Playing";
+                }
+            } else {
+                currentElapsed = 0;
+                currentDuration = 0;
+                isPlaying = false;
+
+                currentBlock.innerText = "Нічого не грає";
+                link.style.display = "none";
+                progressBar.style.width = "0%";
+                document.getElementById("time-info").innerText = "0:00 / 0:00";
+                trackStatus.innerText = "Status: —";
+            }
+
+            const queueBlock = document.getElementById("queue-list");
+            queueBlock.innerHTML = "";
+
+            if (!data.queue || data.queue.length === 0) {
+                const li = document.createElement("li");
+                li.innerText = "Черга пуста";
+                queueBlock.appendChild(li);
+            } else {
+                data.queue.forEach((track) => {
+                    const li = document.createElement("li");
+                    li.innerText = track;
+                    queueBlock.appendChild(li);
+                });
+            }
+
+            const volumeSlider = document.getElementById("volume-slider");
+            const volumeValue = document.getElementById("volume-value");
+
+            if (data.volume !== undefined && document.activeElement !== volumeSlider) {
+                volumeSlider.value = data.volume;
+                volumeValue.innerText = data.volume + "%";
+            }
+
+        } catch (e) {
+            console.log("Помилка оновлення:", e);
+        }
+    }
+
+    async function sendAction(url) {
+        await fetch(url, {
+            method: "POST"
+        });
+
+        updateData();
+    }
+
+    const addForm = document.getElementById("add-form");
+
+    addForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const input = document.getElementById("track-input");
+
+        await fetch("/add", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: "query=" + encodeURIComponent(input.value)
+        });
+
+        input.value = "";
+        updateData();
+    });
+
+    const volumeSlider = document.getElementById("volume-slider");
+    const volumeValue = document.getElementById("volume-value");
+
+    volumeSlider.addEventListener("input", async () => {
+        volumeValue.innerText = volumeSlider.value + "%";
+
+        await fetch("/volume", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: "volume=" + volumeSlider.value
+        });
+    });
+
+    setInterval(updateData, 3000);
+
+    setInterval(() => {
+        if (isPlaying && currentDuration > 0) {
+            currentElapsed = Math.min(currentElapsed + 0.25, currentDuration);
+            updateProgressSmooth();
+        }
+    }, 250);
+    </script>
+
+</body>
+</html>
