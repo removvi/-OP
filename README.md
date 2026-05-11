@@ -214,7 +214,7 @@ pip install -r requirements.txt
 Приклад:
 
 ```env
-DISCORD_TOKEN=your_discord_bot_token_here
+DISCORD_TOKEN=ваш_токен_бота
 ```
 
 Файл `.env` не потрібно завантажувати на GitHub, тому що там зберігається токен бота.
