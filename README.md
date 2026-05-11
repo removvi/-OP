@@ -81,8 +81,6 @@ Discord Music Bot — це бот для відтворення музики у 
 * `/resume`
 * `/leave`
 
-Цей файл відповідає за взаємодію користувача з ботом через Discord.
-
 ### `bot/helpers.py`
 
 Допоміжні функції для Discord-бота.
@@ -130,7 +128,7 @@ Flask routes для веб-інтерфейсу.
 
 ### `templates/index.html`
 
-фронт енд сайту 
+бек енд сайту 
 
 ### `static/style.css`
 
