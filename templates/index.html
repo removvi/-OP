@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="uk">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Discord Music Bot</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <main class="app">
+        <section class="player-card">
+            <div class="top-row">
+                <div>
+                    <p class="label">Now playing</p>
+                    <h1>Discord Music Bot</h1>
+                </div>
+                <div id="statusBadge" class="badge">offline</div>
+            </div>
+
+            <section class="now-playing">
+                <div class="cover">♪</div>
+                <div class="track-info">
+                    <p id="trackTitle" class="track-title">Зараз нічого не грає</p>
+                    <p id="trackTime" class="track-time">0:00 / 0:00</p>
+                    <div class="progress-wrap">
+                        <div id="progressBar" class="progress-bar"></div>
+                    </div>
+                </div>
+            </section>
+
+            <form id="addForm" class="add-form">
+                <input id="queryInput" name="query" placeholder="Назва треку або YouTube-посилання" required autocomplete="off">
+                <input id="priorityInput" name="priority" type="number" value="10" min="1" max="99" title="Пріоритет">
+                <button type="submit">Додати</button>
+            </form>
+
+            <div class="controls">
+                <button onclick="post('/skip')">Skip</button>
+                <button onclick="post('/stop')">Pause</button>
+                <button onclick="post('/resume')">Resume</button>
+                <button onclick="post('/leave')" class="danger">Leave</button>
+            </div>
+
+            <section class="volume-block">
+                <div class="volume-head">
+                    <span>Гучність</span>
+                    <strong id="volumeValue">100%</strong>
+                </div>
+                <input id="volumeSlider" type="range" min="0" max="200" value="100">
+            </section>
+        </section>
+
+        <section class="queue-card">
+            <div class="queue-head">
+                <h2>Черга</h2>
+                <span id="queueCount">0 треків</span>
+            </div>
+            <ol id="queueList" class="queue-list"></ol>
+        </section>
+    </main>
+
+    <script>
+        let currentTrack = null;
+        let lastSyncTime = Date.now();
+        let localElapsed = 0;
+        let volumeTimer = null;
+
+        const trackTitle = document.getElementById('trackTitle');
+        const trackTime = document.getElementById('trackTime');
+        const progressBar = document.getElementById('progressBar');
+        const statusBadge = document.getElementById('statusBadge');
+        const queueList = document.getElementById('queueList');
+        const queueCount = document.getElementById('queueCount');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeValue = document.getElementById('volumeValue');
+
+        function formatTime(seconds) {
+            seconds = Math.max(0, Math.floor(seconds || 0));
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${m}:${String(s).padStart(2, '0')}`;
+        }
+
+        async function post(url) {
+            await fetch(url, { method: 'POST' });
+            await loadStatus();
+        }
+
+        async function loadStatus() {
+            const response = await fetch('/status', { cache: 'no-store' });
+            const data = await response.json();
+
+            currentTrack = data.current;
+            lastSyncTime = Date.now();
+            localElapsed = currentTrack ? currentTrack.elapsed : 0;
+
+            volumeSlider.value = data.volume ?? 100;
+            volumeValue.textContent = `${volumeSlider.value}%`;
+
+            queueList.innerHTML = '';
+            data.queue.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `<span>${index + 1}</span><p>${item}</p>`;
+                queueList.appendChild(li);
+            });
+
+            queueCount.textContent = `${data.queue.length} треків`;
+            renderPlayer();
+        }
+
+        function renderPlayer() {
+            if (!currentTrack) {
+                trackTitle.textContent = 'Зараз нічого не грає';
+                trackTime.textContent = '0:00 / 0:00';
+                progressBar.style.width = '0%';
+                statusBadge.textContent = 'idle';
+                statusBadge.className = 'badge';
+                return;
+            }
+
+            let elapsed = localElapsed;
+            if (currentTrack.status === 'playing') {
+                elapsed += (Date.now() - lastSyncTime) / 1000;
+            }
+
+            const duration = currentTrack.duration || 0;
+            elapsed = Math.min(elapsed, duration || elapsed);
+            const progress = duration ? (elapsed / duration) * 100 : 0;
+
+            trackTitle.textContent = currentTrack.title;
+            trackTime.textContent = `${formatTime(elapsed)} / ${formatTime(duration)}`;
+            progressBar.style.width = `${Math.min(100, progress)}%`;
+
+            statusBadge.textContent = currentTrack.status === 'paused' ? 'paused' : 'playing';
+            statusBadge.className = currentTrack.status === 'paused' ? 'badge paused' : 'badge playing';
+        }
+
+        document.getElementById('addForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            await fetch('/add', { method: 'POST', body: formData });
+            document.getElementById('queryInput').value = '';
+            await loadStatus();
+        });
+
+        volumeSlider.addEventListener('input', () => {
+            volumeValue.textContent = `${volumeSlider.value}%`;
+            clearTimeout(volumeTimer);
+            volumeTimer = setTimeout(async () => {
+                const formData = new FormData();
+                formData.append('volume', volumeSlider.value);
+                await fetch('/volume', { method: 'POST', body: formData });
+            }, 120);
+        });
+
+        setInterval(renderPlayer, 250);
+        setInterval(loadStatus, 3000);
+        loadStatus();
+    </script>
+</body>
+</html>
